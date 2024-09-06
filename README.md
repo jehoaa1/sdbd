@@ -1,85 +1,91 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 댓글 기능이 있는 익명 게시판 및 키워드 알림 기능
+프레임워크는 NestJS를 사용했습니다.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## - 설치 및 설정법
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### 1. Node.js 및 npm 설치
 
-## Description
+NestJS는 Node.js와 npm이 필요합니다. 아래 링크에서 Node.js를 다운로드하여 설치합니다:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Node.js 다운로드](https://nodejs.org/)
 
-## Project setup
+설치 후, 터미널에서 다음 명령어로 Node.js와 npm이 올바르게 설치되었는지 확인합니다:
 
 ```bash
-$ npm install
+node -v
+npm -v
 ```
 
-## Compile and run the project
+### 2. NestJS 설치 
+```bash
+npm install -g @nestjs/cli
+```
+
+### 3. 익명 게시판 git clone
+```bash
+git clone git@github.com:jehoaa1/sdbd.git
+``` 
+
+### 4. 서버 실행
+```bash
+npm run start
+```
+
+## - DB 스키마
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+CREATE TABLE `board` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL COMMENT '제목',
+  `content` mediumtext NOT NULL COMMENT '내용',
+  `name` varchar(100) NOT NULL COMMENT '작성자 이름',
+  `password` varchar(255) NOT NULL COMMENT '비밀번호',
+  `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '수정일시',
+  KEY `id` (`id`),
+  KEY `title` (`title`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시판';
 ```
-
-## Run tests
 
 ```bash
-# unit tests
-$ npm run test
+CREATE TABLE `comments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `board_id` int(10) unsigned NOT NULL COMMENT 'board.id',
+  `parent_comment_id` int(10) unsigned DEFAULT NULL COMMENT '부모 댓글 id',
+  `content` mediumtext NOT NULL COMMENT '내용',
+  `name` varchar(100) NOT NULL COMMENT '작성자',
+  `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
+  KEY `id` (`id`),
+  KEY `board_id` (`board_id`),
+  KEY `parent_comment_id` (`parent_comment_id`),
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`parent_comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='댓글';
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
 
-## Resources
+```bash
+CREATE TABLE `keyword_alert` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL COMMENT '알림 대상자 이름',
+  `board_id` int(10) unsigned DEFAULT NULL COMMENT 'board.id',
+  `comments_id` int(10) unsigned DEFAULT NULL COMMENT 'comments.id',
+  `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
+  KEY `id` (`id`),
+  KEY `board_id` (`board_id`),
+  KEY `comments_id` (`comments_id`),
+  CONSTRAINT `keyword_alert_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `keyword_alert_ibfk_2` FOREIGN KEY (`comments_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='키워드 알림';
+```
 
-Check out a few resources that may come in handy when working with NestJS:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 게시글 목록 API
+## 게시글 작성 API
+## 게시글 수정 API
+## 게시글 삭제 API
+## 댓글 목록 API
+## 댓글 작성 API
+## 게시물 또는 댓글 등록 시 알림 기능 구현

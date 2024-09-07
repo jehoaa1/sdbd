@@ -52,7 +52,7 @@ export class CommentRepository {
   }
 
   async findAndCount(query: GetCommentQueryDto): Promise<[Comment[], number]> {
-    const { page = 1, limit = 10 } = query;
+    const { boardId, page = 1, limit = 10 } = query;
 
     if (page < 1) {
       throw new BadRequestException('페이지 번호는 1 이상이어야 합니다.');
@@ -74,7 +74,8 @@ export class CommentRepository {
           FROM
             comments
           WHERE
-            parent_comment_id IS NULL
+            board_id = ${boardId}
+            AND parent_comment_id IS NULL
           UNION ALL
           SELECT
             c.id,
@@ -120,7 +121,8 @@ export class CommentRepository {
           FROM
             comments
           WHERE
-            parent_comment_id IS NULL
+            board_id = ${boardId}
+            AND parent_comment_id IS NULL
           UNION ALL
           SELECT
             c.id,

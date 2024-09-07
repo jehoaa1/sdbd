@@ -4,6 +4,7 @@ import {
   UpdateBoardDto,
   BoardResponseDto,
   GetBoardsQueryDto,
+  GetBoardsResponseDto,
 } from '../dtos/board.dto';
 import { Board } from '../entities/board.entity';
 import { BoardRepository } from '../repositories/board.query.repository';
@@ -14,7 +15,7 @@ export class BoardService {
 
   async getAllBoards(
     getBoardsQueryDto: GetBoardsQueryDto,
-  ): Promise<{ boards: BoardResponseDto[]; total: number }> {
+  ): Promise<GetBoardsResponseDto> {
     // 페이징 처리
     const [boards, total] =
       await this.boardRepository.findAndCount(getBoardsQueryDto);
@@ -24,7 +25,7 @@ export class BoardService {
       this.toBoardResponseDto(board),
     );
 
-    return { boards: boardResponseDtos, total };
+    return { boards: boardResponseDtos, statusCode: 200, total };
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<BoardResponseDto> {

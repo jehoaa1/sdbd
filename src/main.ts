@@ -7,8 +7,6 @@ import { config } from 'dotenv';
 config();
 
 async function bootstrap() {
-  console.log('Database Name:', process.env.DB_NAME);
-
   const app = await NestFactory.create(AppModule);
 
   // Swagger 설정

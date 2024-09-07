@@ -84,6 +84,7 @@ CREATE TABLE `comments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `board_id` int(10) unsigned NOT NULL COMMENT 'board.id',
   `parent_comment_id` int(10) unsigned DEFAULT NULL COMMENT '부모 댓글 id',
+  `level` tinyint(3) unsigned DEFAULT 1 COMMENT '댓글 레벨 [댓글의 댓글]',
   `content` mediumtext NOT NULL COMMENT '내용',
   `name` varchar(100) NOT NULL COMMENT '작성자',
   `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
@@ -92,7 +93,7 @@ CREATE TABLE `comments` (
   KEY `parent_comment_id` (`parent_comment_id`),
   CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE,
   CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`parent_comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='댓글';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='댓글';
 
 ```
 

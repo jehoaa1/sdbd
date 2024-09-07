@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
@@ -29,6 +30,10 @@ export class BoardRepository {
     }
     if (name) {
       whereConditions.name = Like(`%${name}%`);
+    }
+
+    if (page < 1) {
+      throw new BadRequestException('페이지 번호는 1 이상이어야 합니다.');
     }
 
     return await this.boardRepository.findAndCount({

@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Board } from './board.entity';
 
@@ -23,6 +24,9 @@ export class Comment {
   })
   parent_comment_id: number | null;
 
+  @Column({ type: 'int', unsigned: true, comment: '댓글레벨[댓글 위치]' })
+  level: number;
+
   @Column({ type: 'mediumtext', comment: '내용' })
   content: string;
 
@@ -37,8 +41,10 @@ export class Comment {
   created_at: Date;
 
   @ManyToOne(() => Board, (board) => board.comments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'board_id' })
   board: Board;
 
   @ManyToOne(() => Comment, (comment) => comment.id, { onDelete: 'CASCADE' })
-  parentComment: Comment | null;
+  @JoinColumn({ name: 'parent_comment_id' })
+  parentComment: Comment[] | null;
 }

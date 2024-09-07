@@ -19,13 +19,13 @@ export class GetBoardsQueryDto {
     description: '페이지 번호',
     example: 1,
   })
-  page?: number;
+  page: number;
 
   @ApiProperty({
     description: '페이지 당 항목 수',
     example: 10,
   })
-  limit?: number;
+  limit: number;
 }
 
 class BaseBoardDto {
@@ -95,6 +95,12 @@ export class GetBoardsResponseDto {
     description: '게시글 목록',
   })
   boards: BoardResponseDto[];
+
+  @ApiProperty({
+    description: '상태 코드',
+    example: 200,
+  })
+  statusCode: number;
 
   @ApiProperty({
     description: '총 게시글 수',

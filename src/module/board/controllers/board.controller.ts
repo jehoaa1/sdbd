@@ -38,7 +38,7 @@ export class BoardController {
   async getAllBoards(
     @Query() query: GetBoardsQueryDto,
   ): Promise<{ boards: BoardResponseDto[]; total: number }> {
-    return this.boardService.getAllBoards(query);
+    return await this.boardService.getAllBoards(query);
   }
 
   @Post()

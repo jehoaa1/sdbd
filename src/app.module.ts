@@ -23,6 +23,7 @@ import { BoardModule } from './module/board/index';
       extra: {
         charset: 'utf8mb4_unicode_ci',
       },
+      logging: true, // 쿼리 로깅 활성화
     }),
     KeywordAlertModule,
     BoardModule,

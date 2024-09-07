@@ -1,28 +1,57 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CreateBoardDto } from '../dtos/create-board.dto';
-import { Repository } from 'typeorm';
+import {
+  CreateBoardDto,
+  UpdateBoardDto,
+  BoardResponseDto,
+  GetBoardsQueryDto,
+} from '../dtos/board.dto';
 import { Board } from '../entities/board.entity';
+import { BoardRepository } from '../repositories/board.query.repository';
 
 @Injectable()
 export class BoardService {
-  constructor(
-    @InjectRepository(Board)
-    private readonly boardRepository: Repository<Board>,
-  ) {}
+  constructor(private readonly boardRepository: BoardRepository) {}
 
-  async getAllBoards() {}
-  // 게시글 삽입 메서드
-  async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
-    const { title, content, name, password } = createBoardDto;
+  async getAllBoards(
+    getBoardsQueryDto: GetBoardsQueryDto,
+  ): Promise<{ boards: BoardResponseDto[]; total: number }> {
+    // 페이징 처리
+    const [boards, total] =
+      await this.boardRepository.findAndCount(getBoardsQueryDto);
 
-    const newBoard = this.boardRepository.create({
-      title,
-      content,
-      name,
-      password,
-    });
+    // DTO 변환
+    const boardResponseDtos = boards.map((board) =>
+      this.toBoardResponseDto(board),
+    );
 
-    return await this.boardRepository.save(newBoard);
+    return { boards: boardResponseDtos, total };
+  }
+
+  async createBoard(createBoardDto: CreateBoardDto): Promise<BoardResponseDto> {
+    const board = await this.boardRepository.createBoard(createBoardDto);
+    return this.toBoardResponseDto(board);
+  }
+
+  async updateBoard(
+    id: number,
+    updateBoardDto: UpdateBoardDto,
+  ): Promise<BoardResponseDto> {
+    const board = await this.boardRepository.updateBoard(id, updateBoardDto);
+    return this.toBoardResponseDto(board);
+  }
+
+  async deleteBoard(id: number, password: string): Promise<void> {
+    return this.boardRepository.deleteBoard(id, password);
+  }
+
+  private toBoardResponseDto(board: Board): BoardResponseDto {
+    return {
+      id: board.id,
+      title: board.title,
+      content: board.content,
+      name: board.name,
+      createdAt: board.created_at,
+      updatedAt: board.updated_at,
+    };
   }
 }

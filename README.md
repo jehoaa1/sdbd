@@ -85,7 +85,7 @@ CREATE TABLE `comments` (
   `board_id` int(10) unsigned NOT NULL COMMENT 'board.id',
   `parent_comment_id` int(10) unsigned DEFAULT NULL COMMENT '부모 댓글 id',
   `level` tinyint(3) unsigned DEFAULT 1 COMMENT '댓글 레벨 [댓글의 댓글]',
-  `content` mediumtext NOT NULL COMMENT '내용',
+  `content` text NOT NULL COMMENT '내용',
   `name` varchar(100) NOT NULL COMMENT '작성자',
   `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
   KEY `id` (`id`),
@@ -98,19 +98,52 @@ CREATE TABLE `comments` (
 ```
 
 ```bash
+# 키워드 작성자 정보 테이블
+CREATE TABLE `keyword_author_info` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL COMMENT '작성자',
+  `phone` varchar(12) NOT NULL COMMENT '연락처',
+  `email` varchar(100) NOT NULL COMMENT '이메일',
+  `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
+  KEY `id` (`id`),
+  KEY `name`(`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='키워드 작성자 정보';
+```
+
+```bash
+#키워드
+CREATE TABLE `keyword` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `keyword_author_info_id` int(10) unsigned NOT NULL COMMENT 'keyword_author_info.id',
+  `target_name` varchar(100) NOT NULL COMMENT '키워드 명',
+  `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
+  KEY `id` (`id`),
+  KEY `keyword_author_info_id`(`keyword_author_info_id`),
+  KEY `target_name`(`target_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='키워드';
+```
+
+```bash
 #키워드 알림
 CREATE TABLE `keyword_alert` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL COMMENT '알림 대상자 이름',
-  `board_id` int(10) unsigned DEFAULT NULL COMMENT 'board.id',
-  `comments_id` int(10) unsigned DEFAULT NULL COMMENT 'comments.id',
+  `keyword_id` int(10) unsigned DEFAULT NULL COMMENT 'keyword.id',
+  `board_id` int(10) unsigned NOT NULL COMMENT 'board.id',
+  `content` text NOT NULL COMMENT '내용',
   `created_at` datetime DEFAULT current_timestamp() COMMENT '작성일시',
   KEY `id` (`id`),
-  KEY `board_id` (`board_id`),
-  KEY `comments_id` (`comments_id`),
-  CONSTRAINT `keyword_alert_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `keyword_alert_ibfk_2` FOREIGN KEY (`comments_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
+  KEY `keyword_id` (`keyword_id`),
+  KEY `board_id` (`board_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='키워드 알림';
+```
+
+```
+#키워드알림, 키워드 더미 데이터
+
+insert into keyword_author_info value (null, '허제호', '01084630618', 'jehoaa1@gmail.com', now())
+
+insert into keyword value (null, 1, '키워드1', now()),(null, 1, '키워드2', now()),(null, 1, '강아지', now()), (null, 1, '고양이', now())
+
 ```
 
 ## API 목록

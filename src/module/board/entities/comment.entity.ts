@@ -27,7 +27,7 @@ export class Comment {
   @Column({ type: 'int', unsigned: true, comment: '댓글레벨[댓글 위치]' })
   level: number;
 
-  @Column({ type: 'mediumtext', comment: '내용' })
+  @Column({ type: 'text', comment: '내용' })
   content: string;
 
   @Column({ type: 'varchar', length: 100, comment: '작성자' })

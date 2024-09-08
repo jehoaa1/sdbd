@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BoardService } from '../services/board.service';
+import { KeywordAlertService } from '../services/keyword-alert.service';
 import {
   GetBoardsQueryDto,
   GetBoardsResponseDto,
@@ -26,7 +27,10 @@ import {
 @ApiTags('boards')
 @Controller('boards')
 export class BoardController {
-  constructor(private readonly boardService: BoardService) {}
+  constructor(
+    private readonly boardService: BoardService,
+    private readonly keywordAlertService: KeywordAlertService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: '게시글 목록 가져오기' })
@@ -49,7 +53,23 @@ export class BoardController {
     description: '게시글 작성 완료',
   })
   async createBoard(@Body() createBoardDto: CreateBoardDto) {
-    return await this.boardService.createBoard(createBoardDto);
+    const board = await this.boardService.createBoard(createBoardDto);
+    const { title, content } = createBoardDto;
+
+    const titleList = title.split(' ');
+    const contentList = content.split(' ');
+    const targetKeywordList = [...titleList, ...contentList];
+    //특수기호 제거 및 중복 제거
+    const keywordInputs =
+      await this.keywordAlertService.cleanKeywords(targetKeywordList);
+
+    await this.keywordAlertService.createKeywordAlertIfKeywordExists({
+      keywordInputs,
+      content: '새 게시글에 회원님이 언급되었습니다.',
+      boardId: board.id,
+    });
+
+    return board;
   }
 
   @Put(':id')

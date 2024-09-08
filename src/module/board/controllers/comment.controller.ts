@@ -13,12 +13,12 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Get('comments/:boardId')
+  @Get(':boardId')
   @ApiOperation({ summary: '게시글에 대한 댓글 목록 가져오기' })
   @ApiResponse({
     status: 200,
     description: '게시글에 대한 댓글 목록',
-    type: [Comment],
+    type: GetCommentsResponseDto,
   })
   async getAllComments(
     @Query() query: GetCommentQueryDto,

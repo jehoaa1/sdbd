@@ -20,7 +20,7 @@ export class GetCommentQueryDto {
   limit: number;
 }
 
-export class commentResponseDto {
+export class CommentResponseDto {
   @ApiProperty({
     description: '댓글 ID',
     example: 1,
@@ -66,10 +66,10 @@ export class commentResponseDto {
 
 export class GetCommentsResponseDto {
   @ApiProperty({
-    type: [commentResponseDto],
+    type: [CommentResponseDto],
     description: '댓글 목록',
   })
-  comments: commentResponseDto[];
+  comments: CommentResponseDto[];
 
   @ApiProperty({
     description: '상태 코드',

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommentRepository } from '../repositories/comment.query.repository';
 import {
-  commentResponseDto,
+  CommentResponseDto,
   CreateCommentDto,
   GetCommentQueryDto,
   GetCommentsResponseDto,
@@ -18,7 +18,9 @@ export class CommentService {
     private readonly boardService: BoardService,
   ) {}
 
-  async createComment(createCommentDto: CreateCommentDto): Promise<Comment> {
+  async createComment(
+    createCommentDto: CreateCommentDto,
+  ): Promise<CommentResponseDto> {
     const { board_id } = createCommentDto;
     const board = await this.boardService.findBoardById(board_id);
     if (!board) {
@@ -32,7 +34,7 @@ export class CommentService {
       content: '게시글에 댓글이 등록되었습니다',
       boardId: board_id,
     });
-    return comment;
+    return this.toCommentResponseDto(comment);
   }
 
   async getAllComments(
@@ -50,7 +52,7 @@ export class CommentService {
     return { comments: commentResponseDtos, statusCode: 200, total };
   }
 
-  private toCommentResponseDto(comment: Comment): commentResponseDto {
+  private toCommentResponseDto(comment: Comment): CommentResponseDto {
     return {
       id: comment.id,
       board_id: comment.board_id,

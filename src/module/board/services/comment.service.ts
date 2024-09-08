@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommentRepository } from '../repositories/comment.query.repository';
 import {
   commentResponseDto,
@@ -7,13 +7,32 @@ import {
   GetCommentsResponseDto,
 } from '../dtos/comment.dto';
 import { Comment } from '../entities/comment.entity';
+import { KeywordAlertService } from '../services/keyword-alert.service';
+import { BoardService } from '../services/board.service';
 
 @Injectable()
 export class CommentService {
-  constructor(private readonly commentRepository: CommentRepository) {}
+  constructor(
+    private readonly commentRepository: CommentRepository,
+    private readonly keywordAlertService: KeywordAlertService,
+    private readonly boardService: BoardService,
+  ) {}
 
   async createComment(createCommentDto: CreateCommentDto): Promise<Comment> {
-    return this.commentRepository.createComment(createCommentDto);
+    const { board_id } = createCommentDto;
+    const board = await this.boardService.findBoardById(board_id);
+    if (!board) {
+      throw new NotFoundException('게시글을 찾을 수 없습니다.');
+    }
+
+    const comment =
+      await this.commentRepository.createComment(createCommentDto);
+
+    await this.keywordAlertService.createCommentAlertIfKeywordExists({
+      content: '게시글에 댓글이 등록되었습니다',
+      boardId: board_id,
+    });
+    return comment;
   }
 
   async getAllComments(

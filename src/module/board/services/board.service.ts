@@ -8,10 +8,14 @@ import {
 } from '../dtos/board.dto';
 import { Board } from '../entities/board.entity';
 import { BoardRepository } from '../repositories/board.query.repository';
+import { KeywordAlertService } from '../services/keyword-alert.service';
 
 @Injectable()
 export class BoardService {
-  constructor(private readonly boardRepository: BoardRepository) {}
+  constructor(
+    private readonly boardRepository: BoardRepository,
+    private readonly keywordAlertService: KeywordAlertService,
+  ) {}
 
   async getAllBoards(
     getBoardsQueryDto: GetBoardsQueryDto,
@@ -28,8 +32,27 @@ export class BoardService {
     return { boards: boardResponseDtos, statusCode: 200, total };
   }
 
+  async findBoardById(id: number): Promise<Board | undefined> {
+    return await this.boardRepository.findBoardById(id);
+  }
+
   async createBoard(createBoardDto: CreateBoardDto): Promise<BoardResponseDto> {
     const board = await this.boardRepository.createBoard(createBoardDto);
+    const { title, content } = createBoardDto;
+
+    const titleList = title.split(' ');
+    const contentList = content.split(' ');
+    const targetKeywordList = [...titleList, ...contentList];
+    //특수기호 제거 및 중복 제거
+    const keywordInputs =
+      await this.keywordAlertService.cleanKeywords(targetKeywordList);
+
+    await this.keywordAlertService.createKeywordAlertIfKeywordExists({
+      keywordInputs,
+      content: '새 게시글에 회원님이 언급되었습니다.',
+      boardId: board.id,
+    });
+
     return this.toBoardResponseDto(board);
   }
 
